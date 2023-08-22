@@ -1,0 +1,61 @@
+-- criando banco de dados chamado S_Mercadoria
+CREATE DATABASE S_Mercadoria 
+use S_Mercadoria
+-- Criando tabela Mercadoria
+CREATE TABLE Mercadoria (
+    MercadoriaID INT PRIMARY KEY,
+    Produto VARCHAR(100),
+    Descricao VARCHAR(100),
+    Quantidade INT
+);
+
+-- Criando tabela NovosMercadoria
+
+CREATE TABLE NovosMercadoria(
+    NovaMercadoriaID INT PRIMARY KEY,
+    Produto VARCHAR(100),
+    Descricao VARCHAR(100),
+    Quantidade INT
+);
+
+-- Inserindo dados na tabela Mercadoria
+
+INSERT INTO Mercadoria (MercadoriaID, Produto, Descricao, Quantidade)
+VALUES  (1, 'Notebooks', 'Hardware', 60),
+        (2, 'Switches', 'Hardware', 50);
+
+-- Inserindo dados na tabela NovosMercadoria
+
+INSERT INTO NovosMercadoria (NovaMercadoriaID, Produto, Descricao, Quantidade)
+VALUES (1, 'Processadores', 'Hardware', 60),
+       (3, 'Coolers', 'Hardware ', 30),
+       (4, 'Desktops ', 'Hardware', 90);
+
+-- Iniciando transação
+BEGIN TRANSACTION;
+BEGIN TRY
+-- Inicializando comando com MERGE
+ MERGE INTO Mercadoria AS Origem
+ USING NovosMercadoria AS Destino
+ ON Destino.NovaMercadoriaID = Origem.MercadoriaID
+
+ WHEN MATCHED THEN
+ -- Atualizando dados 
+    UPDATE SET
+        Origem.Produto = Destino.Produto,
+        Origem.Descricao = Destino.Descricao,
+		Origem.Quantidade = Destino.Quantidade
+
+ WHEN NOT MATCHED THEN 
+ INSERT (MercadoriaID, Produto, Descricao, Quantidade)
+ VALUES (Destino.NovaMercadoriaID, Destino.Produto, Destino.Descricao, Destino.Quantidade);
+
+    COMMIT;
+END TRY
+BEGIN CATCH
+    ROLLBACK;
+    PRINT 'Erro na transação: ' + ERROR_MESSAGE();
+END CATCH;
+
+-- Verificando a atualizaçã0
+SELECT * FROM Mercadoria;
